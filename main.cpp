@@ -18,16 +18,16 @@
 
 using namespace std;
 
-vector< vector<int> > vect;
-int iMat[21][21];
-int minimo = 20000;
-
 //estructura para comparar el heap y dejar el menor al principio
 struct comparedis {
     bool operator()(vector<int> i, vector<int> j) {
         return i > j;
     }
 };
+
+priority_queue<int,vector<vector<int> >, comparedis > vect;
+int iMat[21][21];
+int minimo = 20000;
 
 //funcion que saca valor posible de un ciclo incompleto
 int bound( vector<int> va,int n){
@@ -87,12 +87,14 @@ int bound( vector<int> va,int n){
 int desmadre(int n){
     //ciclo que hace hasta que haya un costo posible menor al minimo actual
     do{
-        vector<int> v = vect[0];
+        vector<int> v = vect.top();
+        vect.pop();
         vector<bool> bul (n,0);
         //vector boleano para ver cuales ya estan en el ciclo
         for(int i = 1;i < v.size();i++){
             bul[v[i] - 1] = 1;
         }
+
         for(int i = v.size();i <= n; i++){
             vector<int> aux = v;
             int ite=0;
@@ -100,6 +102,7 @@ int desmadre(int n){
             //buscar el primero en el vector booleano que no este en el ciclo
             while(bul[ite])
                 ite++;
+
             //darle valor de ya visitado
             bul[ite] = 1;
 
@@ -110,16 +113,14 @@ int desmadre(int n){
             if(aux.size() == n){
                 minimo = min( minimo,bound(aux,n) );
             }
+
             else{
                 aux[0] = bound(aux,n);
-                vect.push_back(aux);
+                vect.push(aux);
             }
         }
-        //control para mover el primer vector de vecotres
-        vect[0][0]=INT_MAX;
-        //heap para poner en el primero del vector de vectores en la primera posicion
-        make_heap(vect.begin(),vect.end(),comparedis());
-    }while(vect[0][0] <= minimo);
+
+    }while(vect.top()[0] <= minimo);
 
     return minimo;
 }
@@ -152,7 +153,7 @@ int main()
     v.push_back(10);
     v.push_back(1);
 
-    vect.push_back(v);
+    vect.push(v);
 
     //llamar al resultado del minimo ciclio hamiltoniano
     int re=desmadre(n);
